@@ -7,10 +7,9 @@ document.body.appendChild( renderer.domElement );
 
 var Mic = new Microphone();
 
-
 var render = function () {
-  requestAnimationFrame( render );
-  console.log(Mic.getRMS());
+    requestAnimationFrame( render );
+    console.log(Mic.spectrum);
 
 };
 
