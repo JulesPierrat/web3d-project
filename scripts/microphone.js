@@ -56,7 +56,7 @@ function Microphone (_fft) {
   // A more accurate way to get overall volume
 this.getRMS = function (spectrum) {
     var rms = 0;
-    for (var i = 0; i < vols.length; i++) {
+    for (var i = 0; i < spectrum.length; i++) {
         rms += spectrum[i] * spectrum[i];
     }
     rms /= spectrum.length;
