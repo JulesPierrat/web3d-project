@@ -10,6 +10,7 @@ var Mic = new Microphone();
 
 var render = function () {
   requestAnimationFrame( render );
+  console.log(Mig.getRMS());
 
 };
 
