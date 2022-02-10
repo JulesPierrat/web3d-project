@@ -9,6 +9,8 @@ class BuildingLoader {
             this.ok = false;
             return new Promise((resolve, reject) => {
                 return fetch(path).then(a => a.json()).then(a => {
+                    var min_area = 1000;
+                    var max_area = 0;
                     // Get bary point
                     var x = 0;
                     var y = 0;
@@ -29,26 +31,66 @@ class BuildingLoader {
                         var coords = this.transform(a.features[i].geometry.coordinates[0][0]);
                         //var coords = [[0,0],[1,0],[1,1],[0,1],[0,0]]
                         var base = new THREE.Shape();
+                        var area = 0;
+                        var bary = [0,0];
                         base.moveTo(coords[0][0], coords[0][1]);
                         for (var j = 0 ; j < coords.length - 1 ; j++) {
                             base.lineTo(coords[j+1][0], coords[j+1][1])
+                            // Function that calcul the area of the building
+                            bary[0] += coords[j+1][0];
+                            bary[1] += coords[j+1][1];
                         }
+                        bary[0] = bary[0]/(coords.length - 1);
+                        bary[1] = bary[1]/(coords.length - 1);
 
-                        var height = Math.random() * 10;
-                
-                        var extrudeSettings = {
-                            depth: height
+                        // Calc "area"
+                        for (var j = 0 ; j < coords.length - 1 ; j++) {
+                            area += Math.sqrt((coords[j+1][0] - bary[0])**2 + (coords[j+1][1] - bary[1])**2)
                         }
+                        area = area/(coords.length - 1);
+                
+                        var  extrudeSettings = {
+                            steps: 1,
+                            depth: 50,
+                            bevelEnabled: true,
+                            bevelThickness: 0,
+                            bevelSize: 0,
+                            bevelOffset: 0,
+                            bevelSegments: 1
+                        };
 
                         var color = new THREE.Color( 0xffffff );
                         color.setHex( Math.random() * 0xffffff );
                 
                         var geometry = new THREE.ExtrudeGeometry( base , extrudeSettings);
-                        var material = new THREE.MeshLambertMaterial( { color: color } );
-                        var building = new THREE.Mesh( geometry, material ) ;
+                        var geometry2 = new THREE.EdgesGeometry(geometry);
+                        var material = new THREE.MeshLambertMaterial({color: 0x000000});
+                        var material2 = new THREE.LineBasicMaterial( { color: color, linewidth: 1} );
+                        var building = new THREE.Group();
+                        var building1 = new THREE.Mesh( geometry, material ) ;
+                        var building2 = new THREE.LineSegments( geometry2, material2 ) ;
+                        building.add(building1, building2);
+
+                        building.basic_position = Math.floor(Math.random() * 10) + 10 - 50;
+                        building.position.z = building.basic_position;
+                        building.area = area;
+
+                        if (area > max_area) {
+                            max_area = area;
+                        }
+                        
+                        if (area < min_area) {
+                            min_area = area;
+                        }
                 
                         Buildings.add(building);
                     }
+
+
+                    for (var i = 0 ; i < Buildings.children.length ; i++) {
+                        Buildings.children[i].id_area = Math.floor(20 * Math.random())
+                    }
+
                     resolve(Buildings);
                     this.ok = true;
                 });
